@@ -1,8 +1,10 @@
+
 import "@shopify/shopify-app-remix/adapters/node";
 import {
   ApiVersion,
   AppDistribution,
   shopifyApp,
+  DeliveryMethod,
 } from "@shopify/shopify-app-remix/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import prisma from "./db.server";
@@ -19,6 +21,37 @@ const shopify = shopifyApp({
   future: {
     unstable_newEmbeddedAuthStrategy: true,
     removeRest: true,
+  },
+  // Add webhook configuration
+  webhooks: {
+    path: "/webhooks",
+    webhooks: [
+      {
+        topic: "APP_UNINSTALLED",
+        deliveryMethod: DeliveryMethod.Http,
+        path: "/webhooks/app/uninstalled",
+      },
+      {
+        topic: "APP_SUBSCRIPTIONS_UPDATE",
+        deliveryMethod: DeliveryMethod.Http,
+        path: "/webhooks/app/scopes_update",
+      },
+      {
+        topic: "CUSTOMERS_DATA_REQUEST",
+        deliveryMethod: DeliveryMethod.Http,
+        path: "/webhooks/customers/data_request",
+      },
+      {
+        topic: "CUSTOMERS_REDACT",
+        deliveryMethod: DeliveryMethod.Http,
+        path: "/webhooks/customers/redact",
+      },
+      {
+        topic: "SHOP_REDACT",
+        deliveryMethod: DeliveryMethod.Http,
+        path: "/webhooks/shop/redact",
+      },
+    ],
   },
   ...(process.env.SHOP_CUSTOM_DOMAIN
     ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }

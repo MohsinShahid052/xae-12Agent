@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "0d45090e73d42ee8e5402161e49d54d0"
-application_url = "https://simplified-collins-disputes-specialist.trycloudflare.com"
+application_url = "https://xae-12agent.onrender.com"
 embedded = true
 name = "XÆA-12Agent\r"
 handle = "xaea-12agent"
@@ -31,9 +31,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://simplified-collins-disputes-specialist.trycloudflare.com/auth/callback",
-  "https://simplified-collins-disputes-specialist.trycloudflare.com/auth/shopify/callback",
-  "https://simplified-collins-disputes-specialist.trycloudflare.com/api/auth/callback"
+  "https://xae-12agent.onrender.com/auth/callback",
+  "https://xae-12agent.onrender.com/auth/shopify/callback",
+  "https://xae-12agent.onrender.com/api/auth/callback"
 ]
 
 [pos]
