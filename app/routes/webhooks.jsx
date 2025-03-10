@@ -11,15 +11,24 @@ export const action = async ({ request }) => {
     // Return 200 OK for valid webhooks
     return new Response(null, { status: 200 });
   } catch (error) {
-    console.error(`Webhook error: ${error.message}`);
+    console.error(`Webhook error:`, error);
+    
+    // Safely check if error message exists and contains 'hmac'
+    const errorMessage = error?.message || '';
     
     // This will return 401 Unauthorized for invalid HMAC signatures
     // which is what Shopify is looking for
-    if (error.message.includes("hmac")) {
-      return new Response(error.message, { status: 401 });
+    if (errorMessage.includes("hmac")) {
+      return new Response(errorMessage, { status: 401 });
+    }
+    
+    // If this is an HMAC validation error but doesn't have a message property
+    // (checking for common error types)
+    if (error && (error.name === 'ShopifyHmacError' || error.code === 'HMAC_VALIDATION_FAILED')) {
+      return new Response("HMAC validation failed", { status: 401 });
     }
     
     // For other errors, return 500
-    return new Response(error.message, { status: 500 });
+    return new Response("Internal server error", { status: 500 });
   }
 };
