@@ -7,7 +7,6 @@ import {
 } from "@shopify/shopify-app-remix/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import prisma from "./db.server";
-import { DeliveryMethod } from "@shopify/shopify-api";
 
 // Define your app URL - ensure this is set in your environment variables
 const appUrl = process.env.SHOPIFY_APP_URL || "https://xae-12agent.onrender.com";
