@@ -2,29 +2,28 @@ import { authenticate } from "../shopify.server";
 
 export const action = async ({ request }) => {
   try {
+    // Clone the request to preserve the original body for HMAC validation
+    const clonedRequest = request.clone();
+    
     // This will validate the HMAC and return a 401 if invalid
-    const { topic } = await authenticate.webhook(request);
+    const { topic, shop } = await authenticate.webhook(clonedRequest);
     
     // If we get here, the HMAC was valid
-    console.log(`Webhook received: ${topic}`);
+    console.log(`Webhook received: ${topic} from ${shop}`);
+    
+    // Process the webhook payload
+    const payload = await request.json();
+    
+    // Perform your business logic here
+    // ...
     
     // Return 200 OK for valid webhooks
     return new Response(null, { status: 200 });
   } catch (error) {
-    console.error(`Webhook error:`, error);
+    console.error(`Webhook error details:`, error);
     
-    // Safely check if error message exists and contains 'hmac'
-    const errorMessage = error?.message || '';
-    
-    // This will return 401 Unauthorized for invalid HMAC signatures
-    // which is what Shopify is looking for
-    if (errorMessage.includes("hmac")) {
-      return new Response(errorMessage, { status: 401 });
-    }
-    
-    // If this is an HMAC validation error but doesn't have a message property
-    // (checking for common error types)
-    if (error && (error.name === 'ShopifyHmacError' || error.code === 'HMAC_VALIDATION_FAILED')) {
+    // Return 401 for HMAC validation failures
+    if (error && error.message && error.message.includes("hmac")) {
       return new Response("HMAC validation failed", { status: 401 });
     }
     
