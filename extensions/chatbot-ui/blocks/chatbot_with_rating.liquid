@@ -1,0 +1,649 @@
+{% comment %}
+blocks/chatbot_with_rating.liquid
+{% endcomment %}
+
+
+<div id="chatWidget" class="chat-widget">
+    <button id="askAiButton" class="ask-ai-button">
+        <span>Ask AI</span>
+    </button>
+
+    <!-- Chat Window (Hidden by default) -->
+    <div id="chatWindow" class="chat-window d-none">
+        <div class="chat-header">
+            <button id="backButton" class="back-button d-none">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+            <div class="title">
+                <img id="chatIcon" src="{{ 'Blackrobe-logo.png' | asset_url }}" alt="AI Icon">
+                <span id="chatTitle">XÆ A-12 Agent</span>
+            </div>
+            <button id="closeChatButton" class="close-button">&times;</button>
+        </div>
+
+        <div class="chat-body">
+            <div id="chatMessages" class="chat-messages">
+                <div class="assistant-container">
+                    <img class="message-image" src="{{ 'Blackrobe-logo.png' | asset_url }}" alt="AI Icon">
+                    <div class="message message-assistant">
+                        <span>I am Blackrobe AI customer support agent, what would you like to ask:</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="context-buttons">
+            <button class="context-button">
+                Products
+            </button>
+            <button class="context-button">
+                Orders
+            </button>
+            <button class="context-button">
+                Customer
+            </button>
+            <button class="context-button">
+                Payment
+            </button>
+       
+            <button class="context-button">
+                In-Store
+            </button>
+            <button class="context-button">
+                Personalization
+            </button>
+        </div>
+
+        <div class="chat-footer">
+            <div id="loadingOverlay" class="loading-overlay d-none">
+                <div class="loading-spinner"></div>
+            </div>
+            <div class="input-container">
+                <textarea id="chatInput" class="chat-input" placeholder="Type your message..." rows="1"></textarea>
+                <button id="sendButton" class="send-button">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        class="send-icon">
+                        <path d="M22 2L11 13" />
+                        <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<style>
+    .title {
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        font-size: 15px;
+        font-weight: bold;
+    }
+
+    .chat-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    }
+
+    h5.mb-0 {
+        color: white;
+    }
+
+    .back-button {
+        background: none;
+        border: none;
+        color: white;
+        padding: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        transition: transform 0.2s;
+    }
+
+    .back-button:hover {
+        transform: translateX(-3px);
+    }
+
+    .ask-ai-button {
+        background-color: #3a3c3d;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 24px;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        font-size: 16px;
+    }
+
+    .ask-ai-button:hover {
+        background-color: #171718;
+        transform: translateY(-2px);
+    }
+
+    .chat-window {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 420px;
+        max-width: 95vw;
+        height: 600px;
+        max-height: 80vh;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transition: all 0.3s ease;
+
+    }
+
+
+    /* Buttons container */
+    .context-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding: 20px 15px;
+        /* ✅ Added px to padding values */
+        margin: 10px 0;
+        gap: 10px;
+    }
+
+
+    /* Individual buttons */
+    .context-button {
+        position: relative;
+        color: #3a3c3d;
+        background-color: white;
+        border-radius: 20px;
+        border: 1px solid #3a3c3d;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        width: calc(33.33% - 10px);
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    /* Tooltip styles */
+    .tooltiptext {
+        visibility: hidden;
+        background-color: rgb(168, 170, 172);
+        color: #3a3c3d;
+        text-align: center;
+        border-radius: 6px;
+        padding: 6px 10px;
+        position: absolute;
+        bottom: 120%;
+        left: 50%;
+        min-width: 100px;
+        max-width: 250px;
+        transform: translateX(-50%) translateY(10px) scale(0.8);
+        /* Start lower and smaller */
+        z-index: 1;
+        opacity: 0;
+        box-shadow: 0px 5px 15px rgba(41, 42, 43, 0.2);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+
+    /* Show tooltip with animation */
+    .context-button:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+        transform: translateX(-50%) translateY(0px) scale(1);
+        /* Move up smoothly */
+    }
+
+    /* Button hover effect */
+    .context-button:hover {
+        background-color: #3a3c3d;
+        color: white;
+        box-shadow: 0 5px 15px rgba(43, 44, 44, 0.3);
+        transition: all 0.3s ease-in-out;
+    }
+
+    /* Responsive Fix: If screen is too small */
+    @media (max-width: 500px) {
+        .tooltiptext {
+            left: auto;
+            right: 0;
+            transform: none;
+        }
+    }
+
+    .chat-header {
+        padding: 3px 10px;
+        height: 60px;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        background: #3a3c3d;
+        color: white;
+        border-radius: 12px 12px 0 0;
+        justify-content: space-between;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        font-size: 18px;
+    }
+
+    .chat-header img {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        margin-right: 8px;
+        margin-bottom: 20px;
+    }
+
+    .chat-header .title {
+        display: flex;
+        align-items: center;
+   }
+
+    .chat-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        background-color: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-messages {
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding-bottom: 10px;
+        scroll-behavior: smooth;  /* Enable smooth scrolling */
+
+    }
+
+    .message-container {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+    }
+
+    .user-message {
+        justify-content: flex-end;
+    }
+
+    .user-message img {
+        order: 1;
+        background: black;
+    }
+
+    .assistant-message {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+
+    .message-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 10px;
+        background: #3a3c3d;
+    }
+
+    .message {
+        padding: 10px 15px;
+        border-radius: 10px;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+
+    .message-user {
+        background-color: #3a3c3d;
+        color: white;
+        border-radius: 10px 10px 0 10px;
+        margin-left: 0%;
+    }
+
+    .message-assistant {
+        background-color: #bbbfc4;
+        color: black;
+        border-radius: 10px 10px 10px 0;
+    }
+
+
+    .message-image {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        border: 2px solid black;
+        margin-right: 10px;
+        background: #3a3c3d;
+    }
+
+    .message-error {
+        background: #dc3545;
+        color: white;
+        align-self: flex-start;
+    }
+
+    .assistant-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .assistant-container .message-assistant {
+        margin-right: 10px;
+    }
+
+
+    .chat-footer {
+        background-color: white;
+        padding: 10px;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        align-items: flex-end;
+    }
+
+    .input-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        background-color: #f8f9fa;
+        border-radius: 20px;
+        padding: 4px 10px;
+    }
+
+    .chat-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        resize: none;
+        max-height: 100px;
+        overflow-y: auto;
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .chat-input:focus {
+        outline: none;
+        border-radius: 20px;
+
+    }
+
+    .chat-input::placeholder {
+        font-family: sans-serif;
+    }
+
+    .send-button {
+        background-color: #3a3c3d;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .send-button:hover {
+        background-color: rgb(19, 20, 20);
+    }
+
+    .spinner-border {
+        width: 25px;
+        height: 25px;
+        border-width: 3px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+        .chat-window {
+            width: 95%;
+            right: 2.5%;
+            bottom: 10px;
+        }
+    }
+
+    .close-button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+    .d-none {
+        display: none !important;
+    }
+
+    .chat-window.d-none {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    /* Responsive styles */
+    @media (max-width: 576px) {
+        .context-button {
+            width: calc(50% - 10px);
+            height: 70px;
+            font-size: 12px;
+        }
+
+        .ask-ai-button {
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const askAiButton = document.getElementById('askAiButton');
+        const chatWindow = document.getElementById('chatWindow');
+        const closeChatButton = document.getElementById('closeChatButton');
+        const backButton = document.getElementById('backButton');
+        const chatTitle = document.getElementById('chatTitle');
+        const contextButtons = document.querySelectorAll('.context-button');
+        const inputContainer = document.querySelector('.input-container');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendButton = document.getElementById('sendButton');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        let currentContext = null;
+
+        backButton.classList.add('d-none');
+        inputContainer.classList.add('d-none');
+        askAiButton.addEventListener('click', () => {
+            if (chatWindow.classList.contains('d-none')) {
+                chatWindow.style.display = 'flex';
+                setTimeout(() => {
+                    chatWindow.classList.remove('d-none');
+                }, 10);
+            }
+        });
+
+        contextButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (button.hasAttribute('disabled')) return;
+
+                const tooltipElement = button.querySelector('.tooltiptext');
+                const tooltipText = tooltipElement ? tooltipElement.textContent.trim() : '';
+
+                // Use the tooltip text as the context, or fall back to button text if no tooltip
+                currentContext = tooltipText || button.textContent.trim();
+
+                // Log for debugging
+                console.log("Selected context:", currentContext);
+
+                chatTitle.textContent = currentContext; // ✅ Show only the second word in the header
+                chatMessages.innerHTML = ''; // Clear messages
+                addMessage('assistant', `Welcome to ${currentContext} support! How can I help you?`, true);
+                document.querySelector('.context-buttons').style.display = 'none';
+                backButton.classList.remove('d-none');
+                inputContainer.classList.remove('d-none');
+            });
+        });
+        backButton.addEventListener('click', () => {
+            resetChat();
+        });
+        closeChatButton.addEventListener('click', () => {
+            chatWindow.classList.add('d-none');
+            setTimeout(() => {
+                chatWindow.style.display = 'none';
+                resetChat();
+            }, 300);
+        });
+        function resetChat() {
+            currentContext = null;
+            chatTitle.textContent = 'XÆ A-12 Agent';
+            document.querySelector('.context-buttons').style.display = 'flex';
+            chatMessages.innerHTML = ''; 
+
+            addMessage('assistant', "I am Blackrobe AI customer support agent, what would you like to ask?", true);
+
+            backButton.classList.add('d-none');
+            inputContainer.classList.add('d-none');
+        }
+
+
+
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message || !currentContext) return;
+
+            // Add user message
+            addMessage('user', message, true);
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+
+            // Show "typing..." animation
+            const loadingMessage = addMessage('assistant', 'Typing...', true);
+
+            let apiUrl = '';
+            switch (currentContext.toLowerCase()) {
+                case 'product assistance':
+                    apiUrl = 'https://generate.blackrobe.ai/api/shopify/product';
+                    break;
+                case 'order management':
+                    apiUrl = 'https://generate.blackrobe.ai/api/shopify/order';
+                    break;
+                case 'customer support':
+                    apiUrl = 'https://generate.blackrobe.ai/api/shopify/customer';
+                    break;
+                case 'payment and checkout support':
+                    apiUrl = 'https://generate.blackrobe.ai/api/shopify/payment';
+                    break;
+                case 'enhanced in-store experience':
+                    apiUrl = 'https://generate.blackrobe.ai/api/shopify/InStoreExperience';
+                    break;
+                case 'customer personalization':
+                    apiUrl = 'https://generate.blackrobe.ai/api/shopify/personalization';
+                    break;
+                default:
+                    console.log("No matching context found, using default API");
+                    apiUrl = 'https://generate.blackrobe.ai/api/shopify/product';
+            }
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question: message })
+                });
+
+                const data = await response.json();
+
+                if (data.answer) {
+                    loadingMessage.textContent = data.answer; 
+                    setTimeout(scrollChatToBottom, 100); 
+                   
+
+                } else {
+                    loadingMessage.textContent = 'Error: ' + (data.answer || "Unknown error");
+                    setTimeout(scrollChatToBottom, 100); 
+                }
+            } catch (error) {
+                loadingMessage.textContent = 'Error: Unable to get response';
+                setTimeout(scrollChatToBottom, 100); 
+                console.error("Fetch error:", error);
+            }
+        }
+        chatInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        sendButton.addEventListener('click', sendMessage);
+
+        chatInput.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+
+        function addMessage(type, message, withIcon = false) {
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('message-container', type === 'assistant' ? 'assistant-message' : 'user-message');
+
+            // Show image only for assistant messages
+            if (withIcon && type === 'assistant') {
+                const iconImg = document.createElement('img');
+                iconImg.src = '{{ 'Blackrobe-logo.png' | asset_url }}';
+                iconImg.alt = 'assistant icon';
+                iconImg.classList.add('message-icon');
+
+                messageContainer.appendChild(iconImg);
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `message-${type}`);
+            messageDiv.textContent = message;
+
+            messageContainer.appendChild(messageDiv);
+            document.getElementById('chatMessages').appendChild(messageContainer);
+
+           setTimeout(scrollChatToBottom, 100); 
+
+            return messageDiv;
+        }
+        
+        function scrollChatToBottom() {
+            const chatContainer = document.getElementById('chatMessages');
+            const lastMessage = chatContainer.lastElementChild;
+            
+            if (lastMessage) {
+                lastMessage.scrollIntoView({ behavior: "smooth", block: "end" });
+            }
+        }
+
+    });
+
+</script>
+
+
+{% schema %}
+{
+"name": "Blackrobe AI Chatbot",
+"target": "section",
+"settings": []
+}
+{% endschema %}

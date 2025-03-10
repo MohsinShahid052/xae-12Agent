@@ -1,0 +1,16 @@
+name = "chatbot-Ui"
+type = "theme"
+
+[[extensions]]
+name = "chatbot-Ui"
+type = "theme"
+handle = "chatbot-Ui"
+
+[[extensions.targeting]]
+module = ["*"]
+target = "body"
+
+[extensions.settings]
+fields = [
+  { type = "color", id = "colour", label = "Star Colour", default = "#ff0000" }
+]

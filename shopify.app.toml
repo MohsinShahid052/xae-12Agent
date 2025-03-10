@@ -1,0 +1,40 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "0d45090e73d42ee8e5402161e49d54d0"
+application_url = "https://simplified-collins-disputes-specialist.trycloudflare.com"
+embedded = true
+name = "XÆA-12Agent\r"
+handle = "xaea-12agent"
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2025-01"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+  [[webhooks.subscriptions]]
+  compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
+  uri = "/webhooks"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products"
+
+[auth]
+redirect_urls = [
+  "https://simplified-collins-disputes-specialist.trycloudflare.com/auth/callback",
+  "https://simplified-collins-disputes-specialist.trycloudflare.com/auth/shopify/callback",
+  "https://simplified-collins-disputes-specialist.trycloudflare.com/api/auth/callback"
+]
+
+[pos]
+embedded = false
